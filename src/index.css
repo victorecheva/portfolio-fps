@@ -1,0 +1,119 @@
+@import 'tailwindcss';
+
+/* Paleta del laboratorio, compartida entre el 3D y la interfaz 2D. */
+@theme {
+  --color-lab-bg: #0b1015;
+  --color-lab-panel: #101a22;
+  --color-lab-panel-2: #16242e;
+  --color-lab-line: #23394a;
+  --color-lab-text: #e8f1f5;
+  --color-lab-muted: #90a6b4;
+  --color-lab-accent: #37d6f0;
+  --color-lab-accent-dim: #1d8fa5;
+  --color-lab-ok: #4ade80;
+
+  --font-display: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--color-lab-bg);
+  color: var(--color-lab-text);
+  font-family: var(--font-display);
+  overflow: hidden;
+  /* Al arrastrar el ratón para mirar no debe seleccionarse texto de fondo. */
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* La versión clásica sí es una página normal: recupera el scroll. */
+body.classic-mode {
+  overflow: auto;
+  user-select: auto;
+  -webkit-user-select: auto;
+}
+
+canvas {
+  display: block;
+  touch-action: none;
+}
+
+/* Scrollbar discreta dentro de los paneles de la interfaz. */
+.lab-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-lab-accent-dim) transparent;
+}
+.lab-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.lab-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-lab-accent-dim);
+  border-radius: 4px;
+}
+
+/* Rejilla técnica de fondo para los paneles: cero imágenes. */
+.lab-grid-bg {
+  background-image:
+    linear-gradient(to right, rgb(55 214 240 / 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(55 214 240 / 0.07) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Barrido de escaneo de la tablet. */
+@keyframes lab-scan {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(400%);
+  }
+}
+.lab-scanline {
+  animation: lab-scan 5s linear infinite;
+}
+
+@keyframes lab-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.lab-enter {
+  animation: lab-fade-in 0.22s ease-out both;
+}
+
+@keyframes lab-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  60% {
+    transform: scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.lab-pop {
+  animation: lab-pop 0.28s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+/* Quien pide menos movimiento no debería ver nada animarse. */
+@media (prefers-reduced-motion: reduce) {
+  .lab-scanline,
+  .lab-enter,
+  .lab-pop {
+    animation: none !important;
+  }
+}

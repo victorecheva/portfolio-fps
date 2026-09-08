@@ -1,0 +1,55 @@
+name: Deploy a GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Permisos que necesita `deploy-pages` para publicar.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Un despliegue a la vez; los empujes nuevos no cancelan el que está en curso.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # El build ya ejecuta `tsc -b`, así que un error de tipos detiene el
+      # despliegue antes de publicar nada.
+      - run: npm run build
+
+      # Pages debe estar habilitado en modo Actions antes del primer
+      # despliegue: Settings → Pages → Source: GitHub Actions, o bien
+      #   gh api -X POST repos/OWNER/REPO/pages -f build_type=workflow
+      # No se usa `enablement: true` porque el GITHUB_TOKEN del workflow no
+      # puede crear el sitio ("Resource not accessible by integration").
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
